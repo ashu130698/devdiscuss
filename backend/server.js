@@ -1,21 +1,25 @@
-import dotenv from "dotenv";
-import express from "express";
-import mongoose from "mongoose";
-import cors from "cors";
-
-dotenv.config();
+//Import require libraries
+const express = require("express");  //web framework for building apis 
+const mongoose = require("mongoose");  // odm for mongodb
+const cors = require("cors");  //Enables cross origin resourse sharing
+require("dotenv").config();  //load varible from .env file into process.env
 
 const app = express();
-app.use(cors());
-app.use(express.json());
 
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("Mongo connected"))
-  .catch((err) => console.error("Mongo error:", err));
+//Middleware
+app.use(cors());   //also frontend diffrent origin to call backend
+app.use(express.json());  //Parses incoming request from json
 
-app.get("/health", (req, res) => res.send("OK"));
+//connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.error("Mongo error", err));
 
-app.listen(process.env.PORT || 4000, () =>
-  console.log("Server running on", process.env.PORT || 4000)
-);
+//Health endponts simply check to server is still alsive or not
+app.get("/health", (req, res) => {
+  res.send("ok");
+});
+
+//Starrt server
+const PORT = process.env.PORT || 4000
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
