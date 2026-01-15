@@ -1,7 +1,10 @@
 //Import require libraries
 const express = require("express");  //web framework for building apis 
 const mongoose = require("mongoose");  // odm for mongodb
+const authRoutes = require("./routes/auth");
 const cors = require("cors");  //Enables cross origin resourse sharing
+const authmiddleware = require("./middleware/authmiddleware")
+const postRoutes = require("./routes/post");
 require("dotenv").config();  //load varible from .env file into process.env
 
 const app = express();
@@ -9,6 +12,11 @@ const app = express();
 //Middleware
 app.use(cors());   //also frontend diffrent origin to call backend
 app.use(express.json());  //Parses incoming request from json
+app.use("/auth", authRoutes);
+app.use("/protected", authmiddleware, (req, res) => {
+  res.json({ message: "You accessed protected route", userId: req.userId });
+});
+app.use("/posts", postRoutes);
 
 //connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
