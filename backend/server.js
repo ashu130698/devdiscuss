@@ -4,7 +4,8 @@ const mongoose = require("mongoose");  // odm for mongodb
 const authRoutes = require("./routes/auth");
 const cors = require("cors");  //Enables cross origin resourse sharing
 const authmiddleware = require("./middleware/authmiddleware")
-const postRoutes = require("./routes/post");
+const postRoutes = require("./routes/postRoutes");
+const answerRoutes = require("./routes/answerRoutes");
 require("dotenv").config();  //load varible from .env file into process.env
 
 const app = express();
@@ -17,7 +18,7 @@ app.use("/protected", authmiddleware, (req, res) => {
   res.json({ message: "You accessed protected route", userId: req.userId });
 });
 app.use("/posts", postRoutes);
-
+app.use("/", answerRoutes);
 //connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
