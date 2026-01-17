@@ -15,7 +15,7 @@ app.use(cors());   //also frontend diffrent origin to call backend
 app.use(express.json());  //Parses incoming request from json
 app.use("/auth", authRoutes);
 app.use("/protected", authmiddleware, (req, res) => {
-  res.json({ message: "You accessed protected route", userId: req.userId });
+  res.json({ message: "You accessed protected route", userId: req.user.userId });
 });
 app.use("/posts", postRoutes);
 app.use("/", answerRoutes);
