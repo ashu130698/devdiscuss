@@ -58,7 +58,7 @@ const PostDetails = () => {
     e.preventDefault();
 
     //validation dont allow empty answers
-    if (newAnswer.trim()) {
+    if (!newAnswer.trim()) {
       alert("Please write answers");
       return;
     }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 //Define Typescript for post (Shape of data from backend)
 type Post = {
@@ -18,6 +19,12 @@ const Posts = () => {
   const [loading, setLoading] = useState(true);
   // state to show error if api fails
   const [error, setError] = useState("");
+  // Navigation hook to go to other pages
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
   //useEffect runs when components load
   useEffect(() => {
     fetchPosts();
@@ -51,12 +58,22 @@ const Posts = () => {
       {posts.length === 0 && <p className="text-gray-500">No posts yet</p>}
       {/* map loops through array and show each post */}
       {posts.map((post) => (
-        <div key={post._id} className="border p-4 mb-3 rounded shadow">
+        <div
+          key={post._id}
+          className="border p-4 mb-3 rounded shadow cursor-pointer hover:bg-gray-100 transition"
+          onClick={() => navigate(`/posts/${post._id}`)}
+        >
           <h3 className="font-semibold text-lg">{post.title}</h3>
           <p className="text-sm text-gray-600 mb-2">by {post.author?.name}</p>
           <p>{post.body}</p>
         </div>
       ))}
+      <button
+        onClick={handleLogout}
+        className="mt-6 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+      >
+        Logout
+      </button>
     </div>
   );
 };
