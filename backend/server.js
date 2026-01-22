@@ -19,6 +19,7 @@ app.use("/protected", authmiddleware, (req, res) => {
 });
 app.use("/posts", postRoutes);
 app.use("/", answerRoutes);
+
 //connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
