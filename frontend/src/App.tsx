@@ -5,6 +5,7 @@ import Posts from "./pages/Posts";
 import PostDetails from "./pages/PostDetails";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import CreatePost from "./pages/CreatePost";
 
 export default function App() {
   return (
@@ -45,6 +46,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <PostDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/create-post"
+          element={
+            <ProtectedRoute>
+              <CreatePost />
             </ProtectedRoute>
           }
         />

@@ -54,6 +54,12 @@ const Posts = () => {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">All Posts</h2>
+      <button
+        onClick={() => navigate("/create-post")}
+        className="bg-blue-600 text-white px-4 py-2 mb-4 rounded"
+      >
+        + Create Post
+      </button>
       {/* if no post exit */}
       {posts.length === 0 && <p className="text-gray-500">No posts yet</p>}
       {/* map loops through array and show each post */}
