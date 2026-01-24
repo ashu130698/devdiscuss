@@ -24,12 +24,11 @@ exports.addAnswer = async (req, res) => {
 exports.getAnswers = async (req, res) => {
   try {
     const answers = await Answer.find({ post: req.params.id })
-      .populate("author", "name email")
+      .populate("author", "_id name")
       .sort({ createdAt: -1 });
 
     res.json(answers);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ json: "Failed to fetch answers" });
   }
 };

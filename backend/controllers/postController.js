@@ -1,3 +1,4 @@
+const { error } = require("console");
 const Post = require("../models/post");
 
 exports.createPost = async (req, res) => {
@@ -51,15 +52,35 @@ exports.getPosts = async (req, res) => {
 
 exports.getPostsById = async (req, res) => {
   try {
+    const post = await Post.findById(req.params.id).populate(
+      "author",
+      "name email _id",
+    );
 
-    const post = await Post.findById(req.params.id)
-      .populate("author", "name email");
-    
     if (!post) {
-      return res.status(404).json({ error: "Post not found" })
+      return res.status(404).json({ error: "Post not found" });
     }
     res.json(post);
   } catch (err) {
     res.status(500).json({ errror: "Failed to fetch post" });
+  }
+};
+
+exports.deletePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id).populate("author");
+
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+    //only creator can delete
+    if (post.author._id.toString() !== req.user.userId) {
+      return res.status(403).json({ error: "Not authorised" });
+    }
+
+    await post.deleteOne();
+    res.json({ message: "Post Deleted" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete post" });
   }
 };
