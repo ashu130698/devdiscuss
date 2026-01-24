@@ -23,6 +23,7 @@ const Login = () => {
     try {
       const res = await API.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       navigate("/posts");
     } catch (err) {
       setError("Login failed. Check email and password");

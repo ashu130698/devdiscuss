@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 //Define Typescript for post (Shape of data from backend)
 type Post = {
@@ -8,12 +9,14 @@ type Post = {
   title: string;
   body: string;
   author: {
+    _id: string;
     name: string;
     email: string;
   };
 };
+
 const Posts = () => {
-  //state to strore posts list
+  //state to store posts list
   const [posts, setPosts] = useState<Post[]>([]);
   //state to show loading status
   const [loading, setLoading] = useState(true);
@@ -21,59 +24,103 @@ const Posts = () => {
   const [error, setError] = useState("");
   // Navigation hook to go to other pages
   const navigate = useNavigate();
+
+  // Get logged-in user from localStorage
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const loggedInUserId = user?._id;
+
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
+
+  // Handle delete post
+  const handleDeletePost = async (postId: string) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) {
+      return;
+    }
+
+    try {
+      await axios.delete(`http://localhost:4000/posts/${postId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      // Remove post from state
+      setPosts((prev) => prev.filter((p) => p._id !== postId));
+    } catch (error) {
+      alert("Not authorized or failed to delete post");
+    }
+  };
+
   //useEffect runs when components load
   useEffect(() => {
     fetchPosts();
   }, []);
-  //function to called backend apis and posts
+
+  //function to call backend apis and get posts
   const fetchPosts = async () => {
     try {
       const res = await API.get("/posts");
-
       //save posts in state
       setPosts(res.data);
-
       setLoading(false);
     } catch (err) {
       setError("failed to load posts");
       setLoading(false);
     }
   };
+
   // if still loading show this
   if (loading) {
     return <div className="p-4">Loading posts...</div>;
   }
+
   //if error happens show this
   if (error) {
     return <div className="p-4 text-red-500">{error}</div>;
   }
+
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">All Posts</h2>
       <button
         onClick={() => navigate("/create-post")}
-        className="bg-blue-600 text-white px-4 py-2 mb-4 rounded"
+        className="bg-blue-600 text-white px-4 py-2 mb-4 rounded hover:bg-blue-700"
       >
         + Create Post
       </button>
-      {/* if no post exit */}
+
+      {/* if no post exist */}
       {posts.length === 0 && <p className="text-gray-500">No posts yet</p>}
+
       {/* map loops through array and show each post */}
       {posts.map((post) => (
         <div
           key={post._id}
-          className="border p-4 mb-3 rounded shadow cursor-pointer hover:bg-gray-100 transition"
-          onClick={() => navigate(`/posts/${post._id}`)}
+          className="border p-4 mb-3 rounded shadow hover:bg-gray-100 transition"
         >
-          <h3 className="font-semibold text-lg">{post.title}</h3>
-          <p className="text-sm text-gray-600 mb-2">by {post.author?.name}</p>
-          <p>{post.body}</p>
+          {/* Clickable post content */}
+          <div
+            onClick={() => navigate(`/posts/${post._id}`)}
+            className="cursor-pointer"
+          >
+            <h3 className="font-semibold text-lg">{post.title}</h3>
+            <p className="text-sm text-gray-600 mb-2">by {post.author?.name}</p>
+            <p>{post.body}</p>
+          </div>
+
+          {/* Delete button (only if user is post author) */}
+          {post.author._id === loggedInUserId && (
+            <button
+              onClick={() => handleDeletePost(post._id)}
+              className="text-red-500 text-sm mt-2 hover:text-red-700"
+            >
+              Delete Post
+            </button>
+          )}
         </div>
       ))}
+
       <button
         onClick={handleLogout}
         className="mt-6 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"

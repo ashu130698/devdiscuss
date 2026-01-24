@@ -1,21 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../services/api";
+import axios from "axios";
 
+type UserRef = {
+  _id: string;
+  name: string;
+};
 //structure of post returned by backend
 type Post = {
   _id: string;
   title: string;
   body: string;
-  author: { name: string };
+  author: UserRef;
 };
 //structure of answer returned by backend
 type Answer = {
   _id: string;
   body: string;
-  author: { name: string };
+  author: UserRef;
 };
+
 const PostDetails = () => {
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const loggedInUserId = user?._id;
+
+  console.log("Logged in user id:", loggedInUserId);
   //gets id from /posts/:id
   const { id } = useParams();
   const navigate = useNavigate();
@@ -70,6 +80,17 @@ const PostDetails = () => {
       alert("Failed to add answers");
     }
   };
+  //Delete handler
+  const handleDelete = async (answerId: string) => {
+    try {
+      await axios.delete(`http://localhost:4000/answers/${answerId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setAnswer((prev) => prev.filter((a) => a._id !== answerId));
+    } catch (error) {
+      alert("Not Authorised or failed");
+    }
+  };
   //show loading
   if (loading) {
     return <div className="p-4">Loading post...</div>;
@@ -106,6 +127,14 @@ const PostDetails = () => {
         <div key={a._id} className="border p-3 mb-3 rounded">
           <p>{a.body}</p>
           <p className="text-sm text-gray-500">by {a.author.name}</p>
+          {a.author._id === loggedInUserId && (
+            <button
+              onClick={() => handleDelete(a._id)}
+              className="text-red-500 text-sm mt-2"
+            >
+              Delete
+            </button>
+          )}
         </div>
       ))}
       {/* Add answers */}
