@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../services/api";
-import axios from "axios";
+import { useAuth } from "../context/authContext";
 
 type UserRef = {
   _id: string;
@@ -22,10 +22,6 @@ type Answer = {
 };
 
 const PostDetails = () => {
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-  const loggedInUserId = user?._id;
-
-  console.log("Logged in user id:", loggedInUserId);
   //gets id from /posts/:id
   const { id } = useParams();
   const navigate = useNavigate();
@@ -36,24 +32,27 @@ const PostDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { user } = useAuth();
+
   //fetch single post
   const fetchPost = async () => {
     try {
       const res = await API.get(`/posts/${id}`);
       setPost(res.data);
-    } catch (err) {
+    } catch {
       setError("Failed to load post");
+    } finally {
+      setLoading(false);
     }
   };
+
   //fetch answer for the post
   const fetchAnswers = async () => {
     try {
       const res = await API.get(`/posts/${id}/answers`);
       setAnswer(res.data);
-      setLoading(false);
     } catch (err) {
       setError("Failed to load answer");
-      setLoading(false);
     }
   };
 
@@ -82,15 +81,16 @@ const PostDetails = () => {
   };
   //Delete handler
   const handleDelete = async (answerId: string) => {
+    if (!window.confirm("Delete this answer?")) return;
+
     try {
-      await axios.delete(`http://localhost:4000/answers/${answerId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      await API.delete(`/answers/${answerId}`);
       setAnswer((prev) => prev.filter((a) => a._id !== answerId));
-    } catch (error) {
-      alert("Not Authorised or failed");
+    } catch {
+      alert("Not authorized or failed");
     }
   };
+
   //show loading
   if (loading) {
     return <div className="p-4">Loading post...</div>;
@@ -127,7 +127,7 @@ const PostDetails = () => {
         <div key={a._id} className="border p-3 mb-3 rounded">
           <p>{a.body}</p>
           <p className="text-sm text-gray-500">by {a.author.name}</p>
-          {a.author._id === loggedInUserId && (
+          {user && a.author._id === user._id && (
             <button
               onClick={() => handleDelete(a._id)}
               className="text-red-500 text-sm mt-2"
@@ -138,19 +138,23 @@ const PostDetails = () => {
         </div>
       ))}
       {/* Add answers */}
-      <form onSubmit={handleAnswer} className="mt-6 border-t pt-4">
-        <h3 className="text-lg font-semibold mb-3">Write an Answer</h3>
-        <textarea
-          className="border p-2 w-full mb-2 rounded"
-          placeholder="Write your answer..."
-          value={newAnswer}
-          onChange={(e) => setNewAnswer(e.target.value)}
-          rows={4}
-        />
-        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-          Add Answer
-        </button>
-      </form>
+      {user ? (
+        <form onSubmit={handleAnswer} className="mt-6 border-t pt-4">
+          <h3 className="text-lg font-semibold mb-3">Write an Answer</h3>
+          <textarea
+            className="border p-2 w-full mb-2 rounded"
+            placeholder="Write your answer..."
+            value={newAnswer}
+            onChange={(e) => setNewAnswer(e.target.value)}
+            rows={4}
+          />
+          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Add Answer
+          </button>
+        </form>
+      ) : (
+        <p className="mt-6 text-gray-500">Login to write answer</p>
+      )}
     </div>
   );
 };

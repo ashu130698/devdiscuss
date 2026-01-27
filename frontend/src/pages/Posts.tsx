@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useAuth } from "../context/authContext";
 
 //Define Typescript for post (Shape of data from backend)
 type Post = {
@@ -25,35 +25,29 @@ const Posts = () => {
   // Navigation hook to go to other pages
   const navigate = useNavigate();
 
-  // Get logged-in user from localStorage
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-  const loggedInUserId = user?._id;
+  /// logout using global auth state
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    logout();
     navigate("/login");
   };
 
   // Handle delete post
   const handleDeletePost = async (postId: string) => {
-    if (!window.confirm("Are you sure you want to delete this post?")) {
-      return;
-    }
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
 
     try {
-      await axios.delete(`http://localhost:4000/posts/${postId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      // Remove post from state
+      await API.delete(`/posts/${postId}`);
       setPosts((prev) => prev.filter((p) => p._id !== postId));
-    } catch (error) {
+    } catch {
       alert("Not authorized or failed to delete post");
     }
   };
 
   //useEffect runs when components load
   useEffect(() => {
+    setPosts([]);
     fetchPosts();
   }, []);
 
@@ -110,7 +104,7 @@ const Posts = () => {
           </div>
 
           {/* Delete button (only if user is post author) */}
-          {post.author._id === loggedInUserId && (
+          {user && post.author._id === user._id && (
             <button
               onClick={() => handleDeletePost(post._id)}
               className="text-red-500 text-sm mt-2 hover:text-red-700"

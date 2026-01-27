@@ -1,6 +1,20 @@
 import { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/authContext";
+
+type User = {
+  _id: string;
+  name: string;
+  email: string;
+};
+
+type AuthContextType = {
+  token: string | null;
+  user: User | null;
+  login: (token: string, user: User) => void;
+  logout: () => void;
+};
 
 const Login = () => {
   const [email, setEmail] = useState<string>("");
@@ -9,6 +23,8 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     // Validation
@@ -22,8 +38,12 @@ const Login = () => {
 
     try {
       const res = await API.post("/auth/login", { email, password });
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      const { token, user } = res.data;
+      if (!token || !user) {
+        throw new Error("Invalid login responce");
+      }
+      login(token, user);
+
       navigate("/posts");
     } catch (err) {
       setError("Login failed. Check email and password");
@@ -46,32 +66,39 @@ const Login = () => {
           </div>
         )}
 
-        {/* Email input */}
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border border-gray-300 rounded px-4 py-2 mb-4 focus:outline-none focus:border-blue-500"
-        />
-
-        {/* Password input */}
-        <input
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-gray-300 rounded px-4 py-2 mb-6 focus:outline-none focus:border-blue-500"
-        />
-
-        {/* Login button */}
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-semibold py-2 rounded transition"
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleLogin();
+          }}
         >
-          {loading ? "Logging in..." : "Login"}
-        </button>
+          {/* Email input */}
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border border-gray-300 rounded px-4 py-2 mb-4 focus:outline-none focus:border-blue-500"
+          />
+
+          {/* Password input */}
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-gray-300 rounded px-4 py-2 mb-6 focus:outline-none focus:border-blue-500"
+          />
+
+          {/* Login button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-semibold py-2 rounded transition"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
 
         {/* Register link */}
         <p className="mt-4 text-center text-gray-600">
