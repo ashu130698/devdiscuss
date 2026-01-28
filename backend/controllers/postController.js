@@ -1,4 +1,3 @@
-const { error } = require("console");
 const Post = require("../models/post");
 
 exports.createPost = async (req, res) => {
