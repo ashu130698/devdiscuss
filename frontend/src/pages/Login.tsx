@@ -1,20 +1,7 @@
 import { useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
-
-type User = {
-  _id: string;
-  name: string;
-  email: string;
-};
-
-type AuthContextType = {
-  token: string | null;
-  user: User | null;
-  login: (token: string, user: User) => void;
-  logout: () => void;
-};
+import { useAuth } from "../context/useAuth";
 
 const Login = () => {
   const [email, setEmail] = useState<string>("");
@@ -45,7 +32,7 @@ const Login = () => {
       login(token, user);
 
       navigate("/posts");
-    } catch (err) {
+    } catch {
       setError("Login failed. Check email and password");
     } finally {
       setLoading(false);

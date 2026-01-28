@@ -8,6 +8,9 @@ const CreatePost = () => {
   const [body, setBody] = useState("");
   //use navigation after success
   const navigate = useNavigate();
+
+
+
   // runs when form is submitted
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); //prevent page load
@@ -15,11 +18,11 @@ const CreatePost = () => {
       //call backend API to create post
       await API.post("/posts", {
         title,
-        body,
+        content: body,
       });
       // after successful creation → go back to posts page
       navigate("/posts");
-    } catch (error) {
+    } catch {
       alert("Failed to create Post");
     }
   };

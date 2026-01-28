@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../services/api";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "../context/useAuth";
 
 type UserRef = {
   _id: string;
@@ -29,56 +29,54 @@ const PostDetails = () => {
   const [post, setPost] = useState<Post | null>(null);
   const [answer, setAnswer] = useState<Answer[]>([]);
   const [newAnswer, setNewAnswer] = useState("");
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const { user } = useAuth();
 
   //fetch single post
+useEffect(() => {
+  if (!id) return;
+
   const fetchPost = async () => {
     try {
       const res = await API.get(`/posts/${id}`);
       setPost(res.data);
     } catch {
       setError("Failed to load post");
-    } finally {
-      setLoading(false);
     }
   };
 
-  //fetch answer for the post
   const fetchAnswers = async () => {
     try {
       const res = await API.get(`/posts/${id}/answers`);
       setAnswer(res.data);
-    } catch (err) {
+    } catch {
       setError("Failed to load answer");
     }
   };
 
-  //loads page + answer when page loads
-  useEffect(() => {
-    if (!id) return;
-    fetchPost();
-    fetchAnswers();
-  }, [id]); //added id dependency
-  //add new answers
-  const handleAnswer = async (e: React.FormEvent) => {
-    e.preventDefault();
+  fetchPost();
+  fetchAnswers();
+}, [id]);
 
-    //validation dont allow empty answers
-    if (!newAnswer.trim()) {
-      alert("Please write answers");
-      return;
-    }
-    try {
-      await API.post(`/posts/${id}/answers`, { body: newAnswer });
-      setNewAnswer("");
-      fetchAnswers(); //reload answers after add
-    } catch (error) {
-      alert("Failed to add answers");
-    }
-  };
+
+  //add new answers
+const handleAnswer = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!newAnswer.trim()) return;
+
+  try {
+    await API.post(`/posts/${id}/answers`, { body: newAnswer });
+    setNewAnswer("");
+
+    const res = await API.get(`/posts/${id}/answers`);
+    setAnswer(res.data);
+  } catch {
+    alert("Failed to add answers");
+  }
+};
+
   //Delete handler
   const handleDelete = async (answerId: string) => {
     if (!window.confirm("Delete this answer?")) return;
@@ -91,10 +89,6 @@ const PostDetails = () => {
     }
   };
 
-  //show loading
-  if (loading) {
-    return <div className="p-4">Loading post...</div>;
-  }
   //show error
   if (error) {
     return <div className="p-4">{error}</div>;

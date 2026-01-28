@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "../context/useAuth";
 
 //Define Typescript for post (Shape of data from backend)
 type Post = {
@@ -45,24 +45,20 @@ const Posts = () => {
     }
   };
 
-  //useEffect runs when components load
-  useEffect(() => {
-    setPosts([]);
-    fetchPosts();
-  }, []);
-
-  //function to call backend apis and get posts
+useEffect(() => {
   const fetchPosts = async () => {
     try {
       const res = await API.get("/posts");
-      //save posts in state
       setPosts(res.data);
-      setLoading(false);
-    } catch (err) {
-      setError("failed to load posts");
+    } catch {
+      setError("Failed to load posts");
+    } finally {
       setLoading(false);
     }
   };
+
+  fetchPosts(); // ✅ USED
+}, []);
 
   // if still loading show this
   if (loading) {
@@ -123,6 +119,6 @@ const Posts = () => {
       </button>
     </div>
   );
-};
+};;
 
 export default Posts;
