@@ -1,35 +1,47 @@
-//Import require libraries
-const express = require("express");  //web framework for building apis 
-const mongoose = require("mongoose");  // odm for mongodb
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
+
 const authRoutes = require("./routes/auth");
-const cors = require("cors");  //Enables cross origin resourse sharing
-const authmiddleware = require("./middleware/authmiddleware")
 const postRoutes = require("./routes/postRoutes");
 const answerRoutes = require("./routes/answerRoutes");
-require("dotenv").config();  //load varible from .env file into process.env
+const authMiddleware = require("./middleware/authmiddleware");
 
 const app = express();
 
-//Middleware
-app.use(cors());   //also frontend diffrent origin to call backend
-app.use(express.json());  //Parses incoming request from json
+// Middleware
+app.use(
+  cors({
+    origin: "*",
+    credentials: true,
+  }),
+);
+app.use(express.json());
+
+// Routes
 app.use("/auth", authRoutes);
-app.use("/protected", authmiddleware, (req, res) => {
-  res.json({ message: "You accessed protected route", userId: req.user.userId });
-});
 app.use("/posts", postRoutes);
-app.use("/", answerRoutes);
+app.use("/posts", answerRoutes);
 
-//connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch(err => console.error("Mongo error", err));
+app.use("/protected", authMiddleware, (req, res) => {
+  res.json({
+    message: "You accessed protected route",
+    userId: req.user.userId,
+  });
+});
 
-//Health endponts simply check to server is still alsive or not
+// Health check
 app.get("/health", (req, res) => {
   res.send("ok");
 });
 
-//Starrt server
-const PORT = process.env.PORT || 4000
+// MongoDB
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error("Mongo error", err));
+
+// Start server
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

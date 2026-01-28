@@ -34,55 +34,54 @@ const PostDetails = () => {
   const { user } = useAuth();
 
   //fetch single post
-useEffect(() => {
-  if (!id) return;
+  useEffect(() => {
+    if (!id) return;
 
-  const fetchPost = async () => {
-    try {
-      const res = await API.get(`/posts/${id}`);
-      setPost(res.data);
-    } catch {
-      setError("Failed to load post");
-    }
-  };
+    const fetchPost = async () => {
+      try {
+        const res = await API.get(`/posts/${id}`);
+        setPost(res.data);
+      } catch {
+        setError("Failed to load post");
+      }
+    };
 
-  const fetchAnswers = async () => {
+    const fetchAnswers = async () => {
+      try {
+        const res = await API.get(`/posts/${id}/answers`);
+        setAnswer(res.data);
+      } catch {
+        setError("Failed to load answer");
+      }
+    };
+
+    fetchPost();
+    fetchAnswers();
+  }, [id]);
+
+  //add new answers
+  const handleAnswer = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!newAnswer.trim()) return;
+
     try {
+      await API.post(`/posts/${id}/answers`, { body: newAnswer });
+      setNewAnswer("");
+
       const res = await API.get(`/posts/${id}/answers`);
       setAnswer(res.data);
     } catch {
-      setError("Failed to load answer");
+      alert("Failed to add answers");
     }
   };
-
-  fetchPost();
-  fetchAnswers();
-}, [id]);
-
-
-  //add new answers
-const handleAnswer = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  if (!newAnswer.trim()) return;
-
-  try {
-    await API.post(`/posts/${id}/answers`, { body: newAnswer });
-    setNewAnswer("");
-
-    const res = await API.get(`/posts/${id}/answers`);
-    setAnswer(res.data);
-  } catch {
-    alert("Failed to add answers");
-  }
-};
 
   //Delete handler
   const handleDelete = async (answerId: string) => {
     if (!window.confirm("Delete this answer?")) return;
 
     try {
-      await API.delete(`/answers/${answerId}`);
+      await API.delete(`/posts/answers/${answerId}`);
       setAnswer((prev) => prev.filter((a) => a._id !== answerId));
     } catch {
       alert("Not authorized or failed");
