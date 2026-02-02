@@ -1,3 +1,187 @@
+/* 
+ * DevDiscuss Global Styles
+ * 
+ * STRUCTURE:
+ * 1. Tailwind directives (must be first)
+ * 2. CSS custom properties (design tokens)
+ * 3. Base element styles
+ * 4. Custom utility classes
+ */
+
+/* ==========================================
+   TAILWIND DIRECTIVES
+   ========================================== */
+/* WHY: These inject Tailwind's base, component, and utility styles */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ==========================================
+   CSS CUSTOM PROPERTIES (Design Tokens)
+   ========================================== 
+   WHY: Variables allow easy theming and consistency
+   Interview tip: This is the foundation for dark mode support
+*/
+:root {
+  /* Primary gradient colors */
+  --gradient-start: #3b82f6;  /* blue-500 */
+  --gradient-end: #9333ea;    /* purple-600 */
+  
+  /* Glassmorphism settings */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  
+  /* Transition defaults */
+  --transition-fast: 150ms;
+  --transition-normal: 250ms;
+  --transition-slow: 400ms;
+}
+
+/* ==========================================
+   BASE LAYER - Element defaults
+   ==========================================
+   WHY: @layer base ensures these styles have correct specificity
+   They override browser defaults but are overridable by utilities
+*/
+@layer base {
+  /* Smooth scrolling for better UX */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Body styling */
+  body {
+    /* Anti-aliased text for crisp rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    
+    /* Subtle background for non-gradient pages */
+    @apply bg-gray-50 text-gray-900;
+  }
+  
+  /* Focus states for accessibility (a11y) */
+  /* WHY: Users navigating with keyboard need visible focus */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+  }
+  
+  /* Remove default focus outline (we use ring instead) */
+  *:focus {
+    @apply outline-none;
+  }
+}
+
+/* ==========================================
+   COMPONENT LAYER - Reusable patterns
+   ==========================================
+   WHY: @layer components creates reusable class combinations
+   Interview tip: This is like creating Tailwind "components"
+*/
+@layer components {
+  /* 
+   * GLASSMORPHISM CARD
+   * Modern frosted-glass effect
+   */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md 
+           border border-white/20 
+           rounded-xl shadow-soft;
+  }
+  
+  /* 
+   * PRIMARY BUTTON
+   * Consistent CTA styling across app
+   */
+  .btn-primary {
+    @apply bg-gradient-to-r from-blue-600 to-blue-700
+           hover:from-blue-700 hover:to-blue-800
+           text-white font-semibold
+           px-4 py-2 rounded-lg
+           transition-all duration-250
+           hover:shadow-glow-blue
+           disabled:opacity-50 disabled:cursor-not-allowed
+           disabled:hover:shadow-none;
+  }
+  
+  /* 
+   * SECONDARY BUTTON
+   * Less prominent actions
+   */
+  .btn-secondary {
+    @apply bg-gray-100 hover:bg-gray-200
+           text-gray-700 font-medium
+           px-4 py-2 rounded-lg
+           transition-all duration-250
+           border border-gray-200;
+  }
+  
+  /* 
+   * DANGER BUTTON
+   * Destructive actions (delete, logout)
+   */
+  .btn-danger {
+    @apply bg-gradient-to-r from-red-500 to-red-600
+           hover:from-red-600 hover:to-red-700
+           text-white font-semibold
+           px-4 py-2 rounded-lg
+           transition-all duration-250
+           hover:shadow-lg;
+  }
+  
+  /* 
+   * INPUT FIELD
+   * Consistent form styling
+   */
+  .input-field {
+    @apply w-full px-4 py-3
+           bg-gray-50 border border-gray-200
+           rounded-lg
+           transition-all duration-250
+           placeholder:text-gray-400
+           hover:border-gray-300
+           focus:border-blue-500 focus:bg-white
+           focus:ring-2 focus:ring-blue-500/20;
+  }
+  
+  /* 
+   * CARD HOVER ANIMATION
+   * Subtle lift effect on hover
+   */
+  .card-hover {
+    @apply transition-all duration-250
+           hover:-translate-y-1 hover:shadow-elevated;
+  }
+}
+
+/* ==========================================
+   UTILITY LAYER - One-off helpers
+   ==========================================
+   WHY: Custom utilities not provided by Tailwind
+*/
+@layer utilities {
+  /* Gradient text effect */
+  .text-gradient {
+    @apply bg-gradient-to-r from-blue-600 to-purple-600 
+           bg-clip-text text-transparent;
+  }
+  
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Animation delay utilities (not in Tailwind by default) */
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+}
