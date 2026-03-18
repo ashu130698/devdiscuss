@@ -3,7 +3,7 @@ import axios from "axios";
 
 //create a base axios instance
 const API = axios.create({
-  baseURL: "https://devdiscuss-eqem.onrender.com",
+  baseURL: "http://localhost:4000",
 });
 
 //interceptor= run before every api call

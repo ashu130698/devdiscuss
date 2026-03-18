@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
@@ -15,6 +15,15 @@ type Post = {
   };
 };
 
+// Vote summary per post
+type VoteSummary = {
+  score: number;
+  userVote: number; // 1, -1, or 0
+};
+
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 const Posts = () => {
   //state to store posts list
   const [posts, setPosts] = useState<Post[]>([]);
@@ -24,6 +33,8 @@ const Posts = () => {
   const [error, setError] = useState("");
   // Navigation hook to go to other pages
   const navigate = useNavigate();
+  // Vote data keyed by post ID
+  const [votes, setVotes] = useState<Record<string, VoteSummary>>({});
 
   /// logout using global auth state
   const { user, logout } = useAuth();
@@ -45,20 +56,47 @@ const Posts = () => {
     }
   };
 
-useEffect(() => {
-  const fetchPosts = async () => {
+  // Handle vote on a post
+  const handleVote = async (postId: string, value: number) => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
     try {
-      const res = await API.get("/posts");
-      setPosts(res.data);
+      const res = await API.post(`/votes/${postId}`, { value });
+      setVotes((prev) => ({
+        ...prev,
+        [postId]: res.data,
+      }));
     } catch {
-      setError("Failed to load posts");
-    } finally {
-      setLoading(false);
+      alert("Failed to vote");
     }
   };
 
-  fetchPosts(); // ✅ USED
-}, []);
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await API.get("/posts");
+        setPosts(res.data);
+
+        // Fetch vote summaries in bulk
+        const postIds = res.data.map((p: Post) => p._id);
+        if (postIds.length > 0) {
+          const voteRes = await API.get(
+            `/votes/bulk?ids=${postIds.join(",")}`
+          );
+          setVotes(voteRes.data);
+        }
+      } catch {
+        setError("Failed to load posts");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   // if still loading show this
   if (loading) {
@@ -86,32 +124,84 @@ useEffect(() => {
       {posts.length === 0 && <p className="text-gray-500">No posts yet</p>}
 
       {/* map loops through array and show each post */}
-      {posts.map((post) => (
-        <div
-          key={post._id}
-          className="border p-4 mb-3 rounded shadow hover:bg-gray-100 transition"
-        >
-          {/* Clickable post content */}
-          <div
-            onClick={() => navigate(`/posts/${post._id}`)}
-            className="cursor-pointer"
-          >
-            <h3 className="font-semibold text-lg">{post.title}</h3>
-            <p className="text-sm text-gray-600 mb-2">by {post.author?.name}</p>
-            <p>{post.body}</p>
-          </div>
+      {posts.map((post) => {
+        const voteData = votes[post._id] || { score: 0, userVote: 0 };
 
-          {/* Delete button (only if user is post author) */}
-          {user && post.author._id === user._id && (
-            <button
-              onClick={() => handleDeletePost(post._id)}
-              className="text-red-500 text-sm mt-2 hover:text-red-700"
-            >
-              Delete Post
-            </button>
-          )}
-        </div>
-      ))}
+        return (
+          <div
+            key={post._id}
+            className="border p-4 mb-3 rounded shadow hover:bg-gray-100 transition flex"
+          >
+            {/* Vote buttons — left side */}
+            <div className="flex flex-col items-center mr-4 select-none shrink-0">
+              <button
+                onClick={() => handleVote(post._id, 1)}
+                className={`text-2xl leading-none transition-colors ${
+                  voteData.userVote === 1
+                    ? "text-orange-500"
+                    : "text-gray-400 hover:text-orange-400"
+                }`}
+                title="Upvote"
+              >
+                ▲
+              </button>
+              <span
+                className={`text-lg font-bold my-1 ${
+                  voteData.score > 0
+                    ? "text-orange-500"
+                    : voteData.score < 0
+                    ? "text-blue-500"
+                    : "text-gray-600"
+                }`}
+              >
+                {voteData.score}
+              </span>
+              <button
+                onClick={() => handleVote(post._id, -1)}
+                className={`text-2xl leading-none transition-colors ${
+                  voteData.userVote === -1
+                    ? "text-blue-500"
+                    : "text-gray-400 hover:text-blue-400"
+                }`}
+                title="Downvote"
+              >
+                ▼
+              </button>
+            </div>
+
+            {/* Post content — right side */}
+            <div className="flex-1 min-w-0">
+              {/* Clickable post content */}
+              <div
+                onClick={() => navigate(`/posts/${post._id}`)}
+                className="cursor-pointer"
+              >
+                <h3 className="font-semibold text-lg">{post.title}</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  by {post.author?.name || "Unknown Author"}
+                </p>
+                <div className="prose prose-sm max-w-none line-clamp-3">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {(post.body || "").length > 150
+                      ? (post.body || "").substring(0, 150) + "..."
+                      : post.body || ""}
+                  </ReactMarkdown>
+                </div>
+              </div>
+
+              {/* Delete button (only if user is post author) */}
+              {user && post.author._id === user._id && (
+                <button
+                  onClick={() => handleDeletePost(post._id)}
+                  className="text-red-500 text-sm mt-2 hover:text-red-700"
+                >
+                  Delete Post
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
 
       <button
         onClick={handleLogout}
@@ -121,6 +211,6 @@ useEffect(() => {
       </button>
     </div>
   );
-};;
+};
 
 export default Posts;

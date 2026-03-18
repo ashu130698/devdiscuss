@@ -22,6 +22,7 @@ require("dotenv").config();
 const authRoutes = require("./routes/auth");
 const postRoutes = require("./routes/postRoutes");
 const answerRoutes = require("./routes/answerRoutes");
+const voteRoutes = require("./routes/voteRoutes");
 const authMiddleware = require("./middleware/authmiddleware");
 
 // ==========================================
@@ -42,6 +43,7 @@ app.use(express.json());
 app.use("/auth", authRoutes);
 app.use("/posts", postRoutes);
 app.use("/posts", answerRoutes);
+app.use("/votes", voteRoutes);
 
 app.use("/protected", authMiddleware, (req, res) => {
   res.json({

@@ -21,6 +21,14 @@ type Answer = {
   author: UserRef;
 };
 
+type VoteSummary = {
+  score: number;
+  userVote: number;
+};
+
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 const PostDetails = () => {
   //gets id from /posts/:id
   const { id } = useParams();
@@ -30,6 +38,10 @@ const PostDetails = () => {
   const [answer, setAnswer] = useState<Answer[]>([]);
   const [newAnswer, setNewAnswer] = useState("");
   const [error, setError] = useState("");
+  const [voteData, setVoteData] = useState<VoteSummary>({
+    score: 0,
+    userVote: 0,
+  });
 
   const { user } = useAuth();
 
@@ -55,9 +67,35 @@ const PostDetails = () => {
       }
     };
 
+    const fetchVotes = async () => {
+      try {
+        const res = await API.get(`/votes/${id}`);
+        setVoteData(res.data);
+      } catch {
+        // votes failing shouldn't block the page
+        console.error("Failed to load votes");
+      }
+    };
+
     fetchPost();
     fetchAnswers();
+    fetchVotes();
   }, [id]);
+
+  // Handle voting
+  const handleVote = async (value: number) => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const res = await API.post(`/votes/${id}`, { value });
+      setVoteData(res.data);
+    } catch {
+      alert("Failed to vote");
+    }
+  };
 
   //add new answers
   const handleAnswer = async (e: React.FormEvent) => {
@@ -105,21 +143,71 @@ const PostDetails = () => {
       >
         ← Back to Posts
       </button>
-      {/* Post */}
-      <div className="border p-4 mb-6 rounded">
-        <h2 className="text-2xl font-bold">{post.title}</h2>
-        <p className="text-gray-600 mb-2">by {post.author.name}</p>
-        <p>{post.body}</p>
+      {/* Post with vote buttons */}
+      <div className="border p-4 mb-6 rounded flex">
+        {/* Vote column */}
+        <div className="flex flex-col items-center mr-4 select-none shrink-0">
+          <button
+            onClick={() => handleVote(1)}
+            className={`text-2xl leading-none transition-colors ${
+              voteData.userVote === 1
+                ? "text-orange-500"
+                : "text-gray-400 hover:text-orange-400"
+            }`}
+            title="Upvote"
+          >
+            ▲
+          </button>
+          <span
+            className={`text-xl font-bold my-1 ${
+              voteData.score > 0
+                ? "text-orange-500"
+                : voteData.score < 0
+                ? "text-blue-500"
+                : "text-gray-600"
+            }`}
+          >
+            {voteData.score}
+          </span>
+          <button
+            onClick={() => handleVote(-1)}
+            className={`text-2xl leading-none transition-colors ${
+              voteData.userVote === -1
+                ? "text-blue-500"
+                : "text-gray-400 hover:text-blue-400"
+            }`}
+            title="Downvote"
+          >
+            ▼
+          </button>
+        </div>
+
+        {/* Post content */}
+        <div className="flex-1 min-w-0">
+          <h2 className="text-2xl font-bold">{post.title}</h2>
+          <p className="text-gray-600 mb-2">by {post.author?.name || "Unknown"}</p>
+          <div className="prose max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {post.body || ""}
+            </ReactMarkdown>
+          </div>
+        </div>
       </div>
 
       {/* Answers */}
-      <h3 className="text-xl font-semibold mb-3">Answers ({answer.length})</h3>
+      <h3 className="text-xl font-semibold mb-3">
+        Answers ({answer.length})
+      </h3>
 
       {answer.length === 0 && <p className="text-gray-500">No answers yet</p>}
       {answer.map((a) => (
         <div key={a._id} className="border p-3 mb-3 rounded">
-          <p>{a.body}</p>
-          <p className="text-sm text-gray-500">by {a.author.name}</p>
+          <div className="prose max-w-none mb-2">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {a.body || ""}
+            </ReactMarkdown>
+          </div>
+          <p className="text-sm text-gray-500">by {a.author?.name || "Unknown"}</p>
           {user && a.author._id === user._id && (
             <button
               onClick={() => handleDelete(a._id)}
