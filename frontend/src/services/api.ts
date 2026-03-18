@@ -3,7 +3,7 @@ import axios from "axios";
 
 //create a base axios instance
 const API = axios.create({
-  baseURL: "http://localhost:4000",
+  baseURL: "http://127.0.0.1:4000",
 });
 
 //interceptor= run before every api call

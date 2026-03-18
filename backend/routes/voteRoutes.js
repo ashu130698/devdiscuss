@@ -6,25 +6,47 @@ const {
   getBulkVotes,
 } = require("../controllers/voteController");
 const authmiddleware = require("../middleware/authmiddleware");
+const jwt = require("jsonwebtoken");
 
-// Optional auth middleware — attaches req.user if token present, but doesn't block
+/**
+ * OPTIONAL AUTH MIDDLEWARE
+ * 
+ * Why? For public lists (like Posts), we want to show 
+ * the total score for everyone, but also highlight 
+ * if the CURRENT logged-in user has voted.
+ */
 const optionalAuth = (req, res, next) => {
   const authHeader = req.headers.authorization;
+  
+  // If no token, just continue (req.user remains undefined)
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    req.user = null;
     return next();
   }
-  // Delegate to real auth middleware
-  authmiddleware(req, res, next);
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    // If token is valid, attach user to request
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    // If token is invalid, just continue as guest
+    next();
+  }
 };
 
-// Get votes for multiple posts in bulk (optional auth)
+// ==========================================
+// VOTE ROUTES
+// ==========================================
+
+// GET /votes/bulk?ids=1,2,3 - Get scores for many posts (Public)
 router.get("/bulk", optionalAuth, getBulkVotes);
 
-// Cast a vote (requires auth)
-router.post("/:id", authmiddleware, castVote);
-
-// Get votes for a single post (optional auth to include userVote)
+// GET /votes/:id - Get score for one post (Public)
 router.get("/:id", optionalAuth, getVotes);
+
+// POST /votes/:id - Cast/Toggle a vote (Requires Login)
+router.post("/:id", authmiddleware, castVote);
 
 module.exports = router;
