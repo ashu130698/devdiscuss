@@ -2,27 +2,32 @@ const Post = require("../models/post");
 
 exports.createPost = async (req, res) => {
   try {
-    //destructuring requiring title and body from reqest body
-    const { title, body } = req.body;
-    //simple validation title must required
+    // destructuring requiring title, body, and tags from request body
+    const { title, body, tags } = req.body;
+    
+    // simple validation title must required
     if (!title) {
       return res.status(400).json({ error: "Title is required" });
     }
     if (title.length < 5) {
-      return res.status(400).json({ error: "Title to short" });
+      return res.status(400).json({ error: "Title too short" });
     }
-    if (body && body.length > 5000) {
-      return res.status(400).json({ error: "body too long" });
+
+    // Process tags: convert to array, trim, and lowercase
+    let processedTags = [];
+    if (tags && Array.isArray(tags)) {
+      processedTags = tags.map(t => t.trim().toLowerCase()).filter(t => t !== "");
+    } else if (tags && typeof tags === 'string') {
+      processedTags = tags.split(',').map(t => t.trim().toLowerCase()).filter(t => t !== "");
     }
-    //creating new post document in MongoDB
-    //req.user.userId comes jwt auth middleware
+
+    // creating new post document in MongoDB
     const post = await Post.create({
       title,
       body,
       author: req.user.userId,
+      tags: processedTags
     });
-
-    //sending created post back as response
 
     res.status(201).json(post);
   } catch (err) {

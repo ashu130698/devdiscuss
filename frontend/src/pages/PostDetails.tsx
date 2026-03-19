@@ -12,6 +12,7 @@ type Post = {
   _id: string;
   title: string;
   body: string;
+  tags?: string[];
   author: UserRef;
 };
 //structure of answer returned by backend
@@ -185,7 +186,17 @@ const PostDetails = () => {
         {/* Post content */}
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold">{post.title}</h2>
-          <p className="text-gray-600 mb-2">by {post.author?.name || "Unknown"}</p>
+          <p className="text-gray-600 mb-1">by {post.author?.name || "Unknown"}</p>
+          
+          {/* Tag Display */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {post.tags?.map((tag) => (
+              <span key={tag} className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-100 font-medium">
+                #{tag}
+              </span>
+            ))}
+          </div>
+
           <div className="prose max-w-none">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {post.body || ""}

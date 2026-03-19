@@ -8,6 +8,7 @@ type Post = {
   _id: string;
   title: string;
   body: string;
+  tags?: string[];
   author: {
     _id: string;
     name: string;
@@ -177,9 +178,17 @@ const Posts = () => {
                 className="cursor-pointer"
               >
                 <h3 className="font-semibold text-lg">{post.title}</h3>
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-sm text-gray-600 mb-1">
                   by {post.author?.name || "Unknown Author"}
                 </p>
+                {/* Tag Display */}
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {post.tags?.map((tag) => (
+                    <span key={tag} className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
                 <div className="prose prose-sm max-w-none line-clamp-3">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {(post.body || "").length > 150

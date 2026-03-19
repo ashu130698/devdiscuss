@@ -16,8 +16,13 @@ const postSchema = mongoose.Schema(
       ref: User,
       required: true,
     },
+    tags: [{
+      type: String,
+      trim: true,
+      lowercase: true
+    }]
   },
-  { timeStamp: true },
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Post", postSchema);

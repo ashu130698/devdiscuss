@@ -9,6 +9,7 @@ const CreatePost = () => {
   //state for form input
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [tags, setTags] = useState("");
   const [isPreview, setIsPreview] = useState(false);
   //use navigation after success
   const navigate = useNavigate();
@@ -20,7 +21,8 @@ const CreatePost = () => {
       //call backend API to create post
       await API.post("/posts", {
         title,
-        body, // Fixed: was content
+        body,
+        tags, // Sent as string, backend will handle split
       });
       // after successful creation → go back to posts page
       navigate("/posts");
@@ -58,6 +60,12 @@ const CreatePost = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 required
               />
+              <input
+                className="border p-2 w-full mb-3 rounded"
+                placeholder="Tags (comma-separated, e.g., javascript, help, react)"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+              />
               <textarea
                 className="border p-2 w-full mb-3 rounded"
                 placeholder="Post body (Markdown supported)"
@@ -70,6 +78,13 @@ const CreatePost = () => {
           ) : (
             <div className="mb-6">
               <h1 className="text-2xl font-bold mb-2">{title || "Untitled Post"}</h1>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {tags.split(',').map(t => t.trim()).filter(t => t !== "").map(tag => (
+                  <span key={tag} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm font-medium">
+                    #{tag}
+                  </span>
+                ))}
+              </div>
               <div className="prose max-w-none border p-4 rounded bg-gray-50 min-h-[300px]">
                 {body ? (
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown>
