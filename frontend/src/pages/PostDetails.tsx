@@ -29,6 +29,7 @@ type VoteSummary = {
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import AIAssistant from "../components/AIAssistant";
 
 const PostDetails = () => {
   //gets id from /posts/:id
@@ -204,6 +205,15 @@ const PostDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* AI Assistant Section */}
+      {user && (
+        <AIAssistant 
+          postTitle={post.title} 
+          postBody={post.body} 
+          postTags={post.tags} 
+        />
+      )}
 
       {/* Answers */}
       <h3 className="text-xl font-semibold mb-3">

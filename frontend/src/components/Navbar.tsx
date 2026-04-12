@@ -139,7 +139,7 @@ const Navbar = () => {
         text-gradient
         hidden sm:block
       ">
-        DevDiscuss
+        DevDiscuss <span className="text-sm font-medium opacity-80">— Starc AI</span>
       </span>
     </Link>
   );

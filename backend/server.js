@@ -23,6 +23,7 @@ const authRoutes = require("./routes/auth");
 const postRoutes = require("./routes/postRoutes");
 const answerRoutes = require("./routes/answerRoutes");
 const voteRoutes = require("./routes/voteRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 const authMiddleware = require("./middleware/authmiddleware");
 
 // ==========================================
@@ -44,6 +45,7 @@ app.use("/auth", authRoutes);
 app.use("/posts", postRoutes);
 app.use("/posts", answerRoutes);
 app.use("/votes", voteRoutes);
+app.use("/ai", aiRoutes);
 
 app.use("/protected", authMiddleware, (req, res) => {
   res.json({
