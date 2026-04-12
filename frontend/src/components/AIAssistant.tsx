@@ -31,10 +31,9 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ postTitle, postBody, postTags
 
     try {
       const token = localStorage.getItem("token");
+      const baseURL = import.meta.env.VITE_API_URL || "http://127.0.0.1:4000";
       
-      // We use standard fetch because Axios doesn't support 
-      // ReadableStream for SSE as easily.
-      const res = await fetch("http://127.0.0.1:4000/ai/help", {
+      const res = await fetch(`${baseURL}/ai/help`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

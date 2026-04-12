@@ -1,9 +1,12 @@
 //axios = library to call HTTP api's
 import axios from "axios";
 
-//create a base axios instance
+// Determine the base URL:
+// Use VITE_API_URL if defined (prod), otherwise fallback to local (dev)
+const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:4000";
+
 const API = axios.create({
-  baseURL: "http://127.0.0.1:4000",
+  baseURL: BASE_URL,
 });
 
 //interceptor= run before every api call
