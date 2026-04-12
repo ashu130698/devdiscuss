@@ -33,7 +33,6 @@ const Navbar = () => {
   
   // Local UI state
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Ref for dropdown - used for "click outside" detection
   // WHY: We need to close dropdown when user clicks elsewhere
