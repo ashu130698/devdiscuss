@@ -7,11 +7,15 @@ const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   // function call when form submitted
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
       // calling backend register api
@@ -26,9 +30,14 @@ const Register = () => {
       navigate("/login");
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.message || err.message || "Register Failed";
-      alert(errorMessage);
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        "Register failed";
+      setError(errorMessage);
       console.error("Register error:", err);
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -38,6 +47,11 @@ const Register = () => {
         className="bg-white p-6 rounded shadow-md w-96"
       >
         <h2 className="text-xl font-bold mb-4">Register</h2>
+        {error && (
+          <div className="mb-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
         <input
           className="border p-2 w-full mb-3"
           placeholder="Name"
@@ -61,8 +75,12 @@ const Register = () => {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <button type="submit" className="bg-blue-500 text-white p-2 w-full">
-          Register
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-500 p-2 text-white disabled:cursor-not-allowed disabled:bg-gray-400"
+        >
+          {loading ? "Registering..." : "Register"}
         </button>
       </form>
     </div>

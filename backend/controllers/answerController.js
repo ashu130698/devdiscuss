@@ -1,4 +1,7 @@
 const Answer = require("../models/answer");
+const {
+  enqueueAnswerVerification,
+} = require("../services/verification/verificationQueue");
 
 exports.addAnswer = async (req, res) => {
   try {
@@ -14,6 +17,9 @@ exports.addAnswer = async (req, res) => {
       post: postId,
       author: req.user.userId,
     });
+
+    await enqueueAnswerVerification(answer._id);
+
     res.status(201).json(answer);
   } catch (err) {
     console.error(err);
