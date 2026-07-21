@@ -7,6 +7,8 @@ const VERIFICATION_STATUSES = Object.freeze([
   "EXECUTING",
   "EXECUTION_FAILED",
   "INTERPRETING",
+  "COMPLETED",
+  "INTERPRETATION_FAILED",
   "VERIFIED",
   "FAILED",
 ]);
@@ -19,7 +21,14 @@ const STATUS_TRANSITIONS = Object.freeze({
   SCREENING_FAILED: [],
   EXECUTING: ["EXECUTION_FAILED", "INTERPRETING"],
   EXECUTION_FAILED: [],
-  INTERPRETING: ["VERIFIED", "FAILED"],
+  INTERPRETING: [
+    "COMPLETED",
+    "INTERPRETATION_FAILED",
+    "VERIFIED",
+    "FAILED",
+  ],
+  COMPLETED: [],
+  INTERPRETATION_FAILED: [],
   VERIFIED: [],
   FAILED: [],
 });
@@ -90,12 +99,15 @@ const interpretationSchema = new mongoose.Schema(
   {
     verdict: {
       type: String,
-      enum: ["SUPPORTED", "UNSUPPORTED", "INCONCLUSIVE"],
+      enum: ["VERIFIED", "PARTIALLY_VERIFIED", "NOT_VERIFIED"],
       required: true,
     },
+    confidence: { type: Number, required: true, min: 0, max: 100 },
     summary: { type: String, required: true, trim: true },
     testedContext: { type: String, required: true, trim: true },
+    strengths: { type: [String], default: [] },
     flaggedLimitations: { type: [limitationSchema], default: [] },
+    recommendations: { type: [String], default: [] },
     completedAt: { type: Date, required: true },
   },
   { _id: false },

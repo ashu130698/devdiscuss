@@ -30,6 +30,7 @@ type VoteSummary = {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import AIAssistant from "../components/AIAssistant";
+import VerificationPanel from "../components/VerificationPanel";
 
 const PostDetails = () => {
   //gets id from /posts/:id
@@ -229,6 +230,7 @@ const PostDetails = () => {
             </ReactMarkdown>
           </div>
           <p className="text-sm text-gray-500">by {a.author?.name || "Unknown"}</p>
+          <VerificationPanel answerId={a._id} />
           {user && a.author._id === user._id && (
             <button
               onClick={() => handleDelete(a._id)}

@@ -1,4 +1,6 @@
 const Verification = require("../../models/Verification");
+const { executeVerification } = require("./executionEngine");
+const { interpretVerification } = require("./interpreter");
 const screenStep0 = require("./step0");
 
 const STATUS_PENDING = "PENDING";
@@ -62,7 +64,19 @@ async function processVerificationJob(verificationId) {
       completedAt: new Date(),
     });
 
-    return saveScreeningResult(verificationId, step0);
+    const updatedVerification = await saveScreeningResult(verificationId, step0);
+
+    if (updatedVerification?.status === STATUS_EXECUTING) {
+      const executionVerification = await executeVerification(updatedVerification);
+
+      if (executionVerification?.status === "INTERPRETING") {
+        return interpretVerification(executionVerification);
+      }
+
+      return executionVerification;
+    }
+
+    return updatedVerification;
   } catch (error) {
     console.error("STEP 0 VERIFICATION ERROR:", error);
 
