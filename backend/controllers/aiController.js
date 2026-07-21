@@ -83,7 +83,7 @@ exports.getAIHelp = async (req, res) => {
 
     // 5. Calculate Latency Metric
     const latency = Date.now() - startTime;
-    console.log(`⏱️ AI Latency: ${latency}ms (Provider: OpenRouter / Model: GPT-4o mini)`);
+    console.info(`⏱️ AI Latency: ${latency}ms (Provider: OpenRouter / Model: GPT-4o mini)`);
 
     res.write("data: [DONE]\n\n");
     res.end();

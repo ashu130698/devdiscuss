@@ -105,13 +105,13 @@ const startServer = async () => {
     // Step 1: Connect to MongoDB FIRST
     // WHY: We wait here until MongoDB is fully connected
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ MongoDB connected");
+    console.info("✅ MongoDB connected");
 
     // Step 2: ONLY THEN start the Express server
     // WHY: Now we're guaranteed DB is ready for requests
     const PORT = process.env.PORT || 4000;
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      console.info(`🚀 Server running on port ${PORT}`);
     });
 
   } catch (error) {
@@ -140,17 +140,17 @@ const startServer = async () => {
 
 // Handle SIGINT (Ctrl+C in terminal)
 process.on("SIGINT", async () => {
-  console.log("\n🛑 Shutting down gracefully...");
+  console.info("\n🛑 Shutting down gracefully...");
   await mongoose.connection.close();
-  console.log("📦 MongoDB connection closed");
+  console.info("📦 MongoDB connection closed");
   process.exit(0);
 });
 
 // Handle SIGTERM (deployment/container shutdown)
 process.on("SIGTERM", async () => {
-  console.log("\n🛑 SIGTERM received, shutting down...");
+  console.info("\n🛑 SIGTERM received, shutting down...");
   await mongoose.connection.close();
-  console.log("📦 MongoDB connection closed");
+  console.info("📦 MongoDB connection closed");
   process.exit(0);
 });
 

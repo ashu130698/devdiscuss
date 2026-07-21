@@ -2,6 +2,27 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
+type ApiError = {
+  response?: {
+    data?: {
+      error?: string;
+      message?: string;
+    };
+  };
+  message?: string;
+};
+
+function getRegisterErrorMessage(error: unknown) {
+  const apiError = error as ApiError;
+
+  return (
+    apiError.response?.data?.error ||
+    apiError.response?.data?.message ||
+    apiError.message ||
+    "Register failed"
+  );
+}
+
 const Register = () => {
   //state to store from values
   const [name, setName] = useState("");
@@ -28,14 +49,8 @@ const Register = () => {
 
       //after register redirect to login page
       navigate("/login");
-    } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        "Register failed";
-      setError(errorMessage);
-      console.error("Register error:", err);
+    } catch (err: unknown) {
+      setError(getRegisterErrorMessage(err));
     } finally {
       setLoading(false);
     }

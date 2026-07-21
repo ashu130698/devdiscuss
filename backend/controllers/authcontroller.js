@@ -31,15 +31,18 @@ exports.register = async (req, res) => {
       return res.status(400).json({ error: "Email already exists" });
     }
 
-    return res.status(500).json({ error: err.message || "Registration failed" });
+    return res
+      .status(500)
+      .json({ error: err.message || "Registration failed" });
   }
 };
 
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = email?.trim().toLowerCase();
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
@@ -59,7 +62,7 @@ exports.login = async (req, res) => {
       user: { _id: user._id, name: user.name, email: user.email },
     });
   } catch (err) {
-    console.log("LOGIN ERROR:", err.message);
+    console.error("LOGIN ERROR:", err.message);
     res.status(500).json({ error: err.message });
   }
 };

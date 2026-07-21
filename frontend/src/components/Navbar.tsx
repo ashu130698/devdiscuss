@@ -19,6 +19,37 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
+function Logo({ isAuthenticated }: { isAuthenticated: boolean }) {
+  return (
+    <Link
+      to={isAuthenticated ? "/posts" : "/login"}
+      className="flex items-center gap-2 group"
+    >
+      {/* Logo icon - code brackets */}
+      <div className="
+        w-10 h-10 rounded-xl
+        bg-gradient-to-br from-blue-500 to-purple-600
+        flex items-center justify-center
+        shadow-lg
+        group-hover:shadow-glow-blue
+        transition-all duration-250
+        group-hover:scale-105
+      ">
+        <span className="text-white font-bold text-lg">&lt;/&gt;</span>
+      </div>
+
+      {/* Brand name with gradient text */}
+      <span className="
+        text-xl font-bold
+        text-gradient
+        hidden sm:block
+      ">
+        DevDiscuss <span className="text-sm font-medium opacity-80">— Starc AI</span>
+      </span>
+    </Link>
+  );
+}
+
 const Navbar = () => {
   // ==========================================
   // HOOKS & STATE
@@ -108,42 +139,6 @@ const Navbar = () => {
   };
 
   // ==========================================
-  // RENDER HELPERS
-  // ==========================================
-  
-  /**
-   * Logo component (reused in mobile & desktop)
-   */
-  const Logo = () => (
-    <Link 
-      to={user ? "/posts" : "/login"}
-      className="flex items-center gap-2 group"
-    >
-      {/* Logo icon - code brackets */}
-      <div className="
-        w-10 h-10 rounded-xl
-        bg-gradient-to-br from-blue-500 to-purple-600
-        flex items-center justify-center
-        shadow-lg
-        group-hover:shadow-glow-blue
-        transition-all duration-250
-        group-hover:scale-105
-      ">
-        <span className="text-white font-bold text-lg">&lt;/&gt;</span>
-      </div>
-      
-      {/* Brand name with gradient text */}
-      <span className="
-        text-xl font-bold
-        text-gradient
-        hidden sm:block
-      ">
-        DevDiscuss <span className="text-sm font-medium opacity-80">— Starc AI</span>
-      </span>
-    </Link>
-  );
-
-  // ==========================================
   // MAIN RENDER
   // ==========================================
   return (
@@ -163,7 +158,7 @@ const Navbar = () => {
           {/* ==========================================
               LEFT SIDE: Logo
               ========================================== */}
-          <Logo />
+          <Logo isAuthenticated={Boolean(user)} />
 
           {/* ==========================================
               RIGHT SIDE: Navigation Items

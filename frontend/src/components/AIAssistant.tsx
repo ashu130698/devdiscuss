@@ -8,6 +8,10 @@ interface AIAssistantProps {
   postTags?: string[];
 }
 
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Failed to get AI help";
+}
+
 /**
  * AI Assistant Component
  * 
@@ -81,8 +85,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ postTitle, postBody, postTags
           }
         }
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
